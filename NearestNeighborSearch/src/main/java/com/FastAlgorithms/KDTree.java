@@ -60,23 +60,45 @@ public class KDTree {
             }
         }
         if(start < j){
-            quicksort(start, j, (dim + 1)%(dim+1));
+            quicksort(start, j, (dim+1) % data_dim);
         }
         if(i < end){
-            quicksort(i, end, (dim + 1)%(dim+1));
+            quicksort(i, end, (dim +1) % data_dim);
         }
     }
 
     public INDArray randomProjection(INDArray original){
-
+        return null;
     }
 
-    public INDArray RandomGaussian(int[] dims){
-        INDArray Gaussian = new NDArray(dims);
+    public INDArray RandomGaussian(final int[] dims){
+        final INDArray Gaussian = new NDArray(dims);
         int numPoints = dims[0]*dims[1];
         ExecutorService exec = Executors.newFixedThreadPool(5);
-        Future<?> future[] = new Future[numPoints];
-
+        Future<?> future[] = new Future[dims[1]];
+        class GaussianCreater implements Runnable{
+            private int col;
+            public GaussianCreater(int mycol){
+                col = mycol;
+            }
+            public void run(){
+                for(int i = 0; i < dims[0];i++){
+                    int[] mydims = {i, col};
+                    Gaussian.putScalar(mydims, rand.nextGaussian());
+                }
+            }
+        }
+        for(int i = 0; i < dims[1];i++){
+            future[i] = exec.submit(new GaussianCreater(i));
+        }
+        try{
+            for(int i = 0; i < dims[1]; i++) {
+                (future[i]).get();
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        System.out.println(Gaussian);
         return Gaussian;
     }
 }

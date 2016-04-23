@@ -38,6 +38,7 @@ public class App
 
             KDTree kd = new KDTree(array, 3);
             kd.makeKDTree();
+            kd.RandomGaussian(array.shape());
 
             for(int i = 0; i < epsilons.length; i++){
                 System.out.println(epsilons[i]);
@@ -49,7 +50,7 @@ public class App
                 output_multi = multiThreadedNearestNeighbor(array, epsilons[i]);
                 t = System.nanoTime() - t;
                 System.out.println("\tParallel took: " + t/1000000 + "." + t%1000000 + " milliseconds");
-                testEquality(output,output_multi, 0.00000000001);
+                testEquality(output,output_multi, 0.0000000001);
                 writeToMatlabJson(output_multi,"C:\\Users\\Jeremy\\Documents\\MATLAB\\Fast Algorithms\\Project\\"+fileName+"_epsilon_"+Double.toString(epsilons[i])+".json");
             }
         }catch(Exception e){
