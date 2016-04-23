@@ -3,8 +3,13 @@ package com.FastAlgorithms;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.rng.DefaultRandom;
 import org.nd4j.linalg.api.rng.Random;
+import org.nd4j.linalg.cpu.NDArray;
 import org.nd4j.linalg.indexing.INDArrayIndex;
 import org.nd4j.linalg.indexing.NDArrayIndex;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * Created by Jeremy on 4/22/2016.
@@ -13,6 +18,7 @@ public class KDTree {
     private INDArray input;
     private int k = 1;   //Size of the number of elements in the leaves at the end
     private int data_dim;
+    Random rand = new DefaultRandom();
     public KDTree(INDArray myinput, int myk){
         input = myinput;
         k = myk;
@@ -59,5 +65,18 @@ public class KDTree {
         if(i < end){
             quicksort(i, end, (dim + 1)%(dim+1));
         }
+    }
+
+    public INDArray randomProjection(INDArray original){
+
+    }
+
+    public INDArray RandomGaussian(int[] dims){
+        INDArray Gaussian = new NDArray(dims);
+        int numPoints = dims[0]*dims[1];
+        ExecutorService exec = Executors.newFixedThreadPool(5);
+        Future<?> future[] = new Future[numPoints];
+
+        return Gaussian;
     }
 }
