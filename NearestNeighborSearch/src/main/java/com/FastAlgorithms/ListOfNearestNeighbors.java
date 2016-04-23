@@ -21,6 +21,9 @@ public class ListOfNearestNeighbors {
     public void push(int datapoint, int indexofNeighbor)throws Exception{
         list[datapoint].add(indexofNeighbor);
     }
+    public int pop(int datapoint){
+        return list[datapoint].remove();
+    }
 
     private void validateDimensions(int i, int j)throws Exception{
         if(i < 0 || i >= numSamples){
@@ -67,6 +70,18 @@ class KList{
     public void print(){
         for(int i = 0; i < top.get(); i++){
             System.out.println(data[i]);
+        }
+    }
+
+    public int remove(){
+        while(true) {
+            int mytop = top.get();
+            if(mytop == 0){
+                return -1;
+            }
+            if (top.compareAndSet(mytop, mytop - 1)) {
+                return data[mytop];
+            }
         }
     }
 }

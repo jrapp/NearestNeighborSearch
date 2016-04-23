@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.buffer.DoubleBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.cpu.NDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
 import java.io.BufferedReader;
@@ -27,6 +28,7 @@ public class App
             INDArray array;
             INDArray output;
             INDArray output_multi;
+            INDArray output_kd;
             double[] epsilons = {.1,.5,1,5,10,100,200,1000};
             String fileLocation = "C:\\Users\\Jeremy\\Documents\\MATLAB\\Fast Algorithms\\Project\\";
             String fileName = "n_100";
@@ -34,7 +36,7 @@ public class App
 
             array = get2DArray(fileLocation+fileName+fileExtension);
 
-            JLNearestNeighbors(4, array);
+            JLNearestNeighbors(4, array, epsilons[1]);
 
 
             for(int i = 0; i < epsilons.length; i++){
@@ -48,6 +50,11 @@ public class App
                 t = System.nanoTime() - t;
                 System.out.println("\tParallel took: " + t/1000000 + "." + t%1000000 + " milliseconds");
                 testEquality(output,output_multi, 0.0000000001);
+                t = System.nanoTime();
+                output_kd = JLNearestNeighbors(5, array, epsilons[i]);
+                t = System.nanoTime() - t;
+                System.out.println("\tKD Tree took: " + t/1000000 + "." + t%1000000 + " milliseconds");
+                testEquality(output,output_kd, 0.001);
                 writeToMatlabJson(output_multi,"C:\\Users\\Jeremy\\Documents\\MATLAB\\Fast Algorithms\\Project\\"+fileName+"_epsilon_"+Double.toString(epsilons[i])+".json");
             }
         }catch(Exception e){
@@ -198,7 +205,7 @@ public class App
     }
 
 
-    public static void JLNearestNeighbors(int numRuns, INDArray input){
+    public static INDArray JLNearestNeighbors(int numRuns, INDArray input, double epsilon){
         INDArray randomProjection = KDTree.randomProjection(input);
         KDTree kdTree = new KDTree(randomProjection, 5);
         kdTree.makeKDTree();
@@ -207,7 +214,28 @@ public class App
             kdTree.setNewInput(randomProjection);
             kdTree.makeKDTree();
         }
-        
+        int numdataPoints = input.shape()[0];
+        int[] shape = {numdataPoints,numdataPoints};
+        INDArray nearestNeighbors = new NDArray(shape);
+        final double multiplier = -1 / Math.pow(epsilon,2);
+        double exponent = 0.0;
+        INDArray norm;
+        INDArray temp;
+        for(int i = 0; i < numdataPoints; i++){
+            int nearNeighbor = kdTree.list.pop(i);
+            while(nearNeighbor != -1){
+                norm = input.getRow(i);
+                norm = norm.sub(input.getRow(nearNeighbor));
+                temp = norm.norm2(1);
+                temp.muli(multiplier);
+                exponent = Math.exp(temp.getDouble(0));
+                temp.putScalar(0, exponent);
+                int[] index = {i,nearNeighbor};
+                nearestNeighbors.putScalar(index, exponent);
+                nearNeighbor = kdTree.list.pop(i);
+            }
+        }
+        return nearestNeighbors;
     }
 
 
