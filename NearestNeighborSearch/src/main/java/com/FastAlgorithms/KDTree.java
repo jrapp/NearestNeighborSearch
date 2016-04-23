@@ -22,11 +22,11 @@ public class KDTree {
     public KDTree(INDArray myinput, int myk){
         input = myinput;
         k = myk;
-        data_dim = input.shape()[1] - 1; //get the dimension of the input data (indexing starts at zero
+        data_dim = input.shape()[1]; //get the dimension of the input data (indexing starts at zero
     }
     public KDTree(INDArray myInput){
         input = myInput;
-        data_dim = input.shape()[1] - 1; //get the dimension of the input data
+        data_dim = input.shape()[1]; //get the dimension of the input data
     }
 
     public void makeKDTree(){
@@ -68,7 +68,10 @@ public class KDTree {
     }
 
     public INDArray randomProjection(INDArray original){
-        return null;
+        int[] shape = {original.shape()[0], original.shape()[0]};
+        INDArray Gaussian = RandomGaussian(shape);
+        Gaussian = Gaussian.mmul(original);
+        return Gaussian;
     }
 
     public INDArray RandomGaussian(final int[] dims){
@@ -98,7 +101,6 @@ public class KDTree {
         }catch(Exception e){
             e.printStackTrace();
         }
-        System.out.println(Gaussian);
         return Gaussian;
     }
 }

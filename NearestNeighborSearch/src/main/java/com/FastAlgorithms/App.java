@@ -29,16 +29,17 @@ public class App
             INDArray output_multi;
             double[] epsilons = {.1,.5,1,5,10,100,200,1000};
             String fileLocation = "C:\\Users\\Jeremy\\Documents\\MATLAB\\Fast Algorithms\\Project\\";
-            String fileName = "200_3dcurve";
+            String fileName = "n_100";
             String fileExtension = ".json";
             //String fileName = "n_100.json";
 
             array = get2DArray(fileLocation+fileName+fileExtension);
-            //System.out.println(array);
+            System.out.println(array);
 
             KDTree kd = new KDTree(array, 3);
             kd.makeKDTree();
-            kd.RandomGaussian(array.shape());
+            kd.randomProjection(array);
+            System.out.println(array);
 
             for(int i = 0; i < epsilons.length; i++){
                 System.out.println(epsilons[i]);
