@@ -18,22 +18,48 @@ public class KDTree {
     private INDArray input;
     private int k = 1;   //Size of the number of elements in the leaves at the end
     private int data_dim;
-    Random rand = new DefaultRandom();
+    private int[] permutation;
+    ListOfNearestNeighbors list;
     public KDTree(INDArray myinput, int myk){
         input = myinput;
         k = myk;
         data_dim = input.shape()[1]; //get the dimension of the input data (indexing starts at zero
+        permutation = new int[input.shape()[0]];
+        for(int i = 0; i < input.shape()[0]; i++){
+            permutation[i] = i;
+        }
+        list = new ListOfNearestNeighbors(input.shape()[0], 30);
     }
     public KDTree(INDArray myInput){
         input = myInput;
         data_dim = input.shape()[1]; //get the dimension of the input data
+        permutation = new int[input.shape()[0]];
+        for(int i = 0; i < input.shape()[0]; i++){
+            permutation[i] = i;
+        }
+        list = new ListOfNearestNeighbors(input.shape()[0], 30);
     }
 
     public void makeKDTree(){
         int numSamples = input.shape()[0];
         quicksort(0, numSamples - 1, 1);
+        try {
+            for (int i = 0; i < numSamples / k; i++) {
+                for (int j = k * i; j < k * (i + 1); j++) {
+                    for (int l = j; l < k * (i + 1); l++) {
+                        list.push(permutation[j], permutation[l]);
+                        list.push(permutation[l],permutation[j]);
+                    }
+                }
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
+    public void setNewInput(INDArray newInput){
+        input = newInput;
+    }
 
     private void quicksort(int start, int end, int dim){
         if(end - start <= k){
@@ -55,6 +81,9 @@ public class KDTree {
                 input.putScalar(ind, input.getDouble(j, dim));
                 ind[0] = j;
                 input.putScalar(ind, temp);
+                int permTemp = permutation[i];
+                permutation[i] = permutation[j];
+                permutation[j] = permTemp;
                 i++;
                 j--;
             }
@@ -67,18 +96,21 @@ public class KDTree {
         }
     }
 
-    public INDArray randomProjection(INDArray original){
+    public static INDArray randomProjection(INDArray original){
         int[] shape = {original.shape()[0], original.shape()[0]};
         INDArray Gaussian = RandomGaussian(shape);
         Gaussian = Gaussian.mmul(original);
+        double scalar = Math.sqrt(1/original.shape()[0]);
+        Gaussian = Gaussian.muli(scalar); // divide by square root of m
         return Gaussian;
     }
 
-    public INDArray RandomGaussian(final int[] dims){
+    public static INDArray RandomGaussian(final int[] dims){
         final INDArray Gaussian = new NDArray(dims);
         int numPoints = dims[0]*dims[1];
         ExecutorService exec = Executors.newFixedThreadPool(5);
         Future<?> future[] = new Future[dims[1]];
+        final Random rand = new DefaultRandom();
         class GaussianCreater implements Runnable{
             private int col;
             public GaussianCreater(int mycol){

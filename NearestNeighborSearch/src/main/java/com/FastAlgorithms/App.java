@@ -31,15 +31,11 @@ public class App
             String fileLocation = "C:\\Users\\Jeremy\\Documents\\MATLAB\\Fast Algorithms\\Project\\";
             String fileName = "n_100";
             String fileExtension = ".json";
-            //String fileName = "n_100.json";
 
             array = get2DArray(fileLocation+fileName+fileExtension);
-            System.out.println(array);
 
-            KDTree kd = new KDTree(array, 3);
-            kd.makeKDTree();
-            kd.randomProjection(array);
-            System.out.println(array);
+            stage1(4, array);
+
 
             for(int i = 0; i < epsilons.length; i++){
                 System.out.println(epsilons[i]);
@@ -201,6 +197,17 @@ public class App
         return rv;
     }
 
+
+    public static void stage1(int numRuns, INDArray input){
+        INDArray randomProjection = KDTree.randomProjection(input);
+        KDTree kdTree = new KDTree(randomProjection, 5);
+        for(int j = 1; j <= numRuns; j++){
+            randomProjection = KDTree.randomProjection(input);
+            kdTree.setNewInput(randomProjection);
+            kdTree.makeKDTree();
+        }
+        kdTree.list.print();
+    }
 
 
 }
