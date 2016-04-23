@@ -36,28 +36,28 @@ public class App
 
             array = get2DArray(fileLocation+fileName+fileExtension);
 
-            JLNearestNeighbors(4, array, epsilons[1]);
+            testDataSize(1);
 
 
-            for(int i = 0; i < epsilons.length; i++){
-                System.out.println(epsilons[i]);
-                t = System.nanoTime();
-                output = singleThreadedNearestNeighbor(array, epsilons[i]);
-                t = System.nanoTime() - t;
-                System.out.println("\tSerial took: " + t/1000000 + "." + t%1000000 + " milliseconds");
-                t = System.nanoTime();
-                output_multi = multiThreadedNearestNeighbor(array, epsilons[i]);
-                t = System.nanoTime() - t;
-                System.out.println("\tParallel took: " + t/1000000 + "." + t%1000000 + " milliseconds");
-                testEquality(output,output_multi, 0.0000000001);
-                t = System.nanoTime();
-                output_kd = JLNearestNeighbors(20, array, epsilons[i]);
-                t = System.nanoTime() - t;
-                System.out.println("\tKD Tree took: " + t/1000000 + "." + t%1000000 + " milliseconds");
-                testEquality(output,output_kd, 0.001);
-                writeToMatlabJson(output,"C:\\Users\\Jeremy\\Documents\\MATLAB\\Fast Algorithms\\Project\\"+fileName+"_epsilon_"+Double.toString(epsilons[i])+".json");
-                writeToMatlabJson(output_kd,"C:\\Users\\Jeremy\\Documents\\MATLAB\\Fast Algorithms\\Project\\"+fileName+"_epsilon_"+Double.toString(epsilons[i])+"_kd.json");
-            }
+//            for(int i = 0; i < epsilons.length; i++){
+//                System.out.println(epsilons[i]);
+//                t = System.nanoTime();
+//                output = singleThreadedNearestNeighbor(array, epsilons[i]);
+//                t = System.nanoTime() - t;
+//                System.out.println("\tSerial took: " + t/1000000 + "." + t%1000000 + " milliseconds");
+//                t = System.nanoTime();
+//                output_multi = multiThreadedNearestNeighbor(array, epsilons[i]);
+//                t = System.nanoTime() - t;
+//                System.out.println("\tParallel took: " + t/1000000 + "." + t%1000000 + " milliseconds");
+//                testEquality(output,output_multi, 0.0000000001);
+//                t = System.nanoTime();
+//                output_kd = JLNearestNeighbors(20, array, epsilons[i]);
+//                t = System.nanoTime() - t;
+//                System.out.println("\tKD Tree took: " + t/1000000 + "." + t%1000000 + " milliseconds");
+//                testEquality(output,output_kd, 0.001);
+//                writeToMatlabJson(output,"C:\\Users\\Jeremy\\Documents\\MATLAB\\Fast Algorithms\\Project\\"+fileName+"_epsilon_"+Double.toString(epsilons[i])+".json");
+//                writeToMatlabJson(output_kd,"C:\\Users\\Jeremy\\Documents\\MATLAB\\Fast Algorithms\\Project\\"+fileName+"_epsilon_"+Double.toString(epsilons[i])+"_kd.json");
+//            }
         }catch(Exception e){
             e.printStackTrace();
         }
@@ -239,5 +239,115 @@ public class App
         return nearestNeighbors;
     }
 
+    public static void testDataSize(double epsilon){
+        final int numTrials = 10;
+        final int numberDataSets = 30;
+        String fileLocation = "C:\\Users\\Jeremy\\Documents\\MATLAB\\Fast Algorithms\\Project\\SampleSizeTesting\\";
+        String fileName = "clusters";
+        String fileExtension = ".json";
+
+        INDArray array;
+        INDArray output;
+        int[] shape = {4,30};
+        INDArray testData = new NDArray(shape);
+        int currentDataSet = 100;
+        long t;
+        long average = 0;
+        int[] index = {0,0};
+        for(int i = 0; i < numberDataSets; i++){
+            System.out.println("Data Size: " + currentDataSet);
+            index[0] = 0;
+            index[1] = i;
+            testData.putScalar(index, currentDataSet);
+            array = get2DArray(fileLocation+currentDataSet+fileName+fileExtension);
+            for(int j = 0;j < numTrials;j++){
+                t = System.nanoTime();
+                output = singleThreadedNearestNeighbor(array, epsilon);
+                t = System.nanoTime() - t;
+                average += t;
+            }
+            average/=numTrials;
+            System.out.println("\tSerial: " + average/1000000 + "." + average%1000000 + " milliseconds");
+            index[0] = 1; //Second row is the average serial time
+            testData.putScalar(index, average);
+            for(int j = 0;j < numTrials;j++){
+                t = System.nanoTime();
+                output = multiThreadedNearestNeighbor(array, epsilon);
+                t = System.nanoTime() - t;
+                average += t;
+            }
+            average/=numTrials;
+            System.out.println("\tMultiThreaded: " + average/1000000 + "." + average%1000000 + " milliseconds");
+            index[0] = 2;
+            testData.putScalar(index, average);
+            for(int j = 0;j < numTrials;j++){
+                t = System.nanoTime();
+                output = JLNearestNeighbors(20,array,epsilon);
+                t = System.nanoTime() - t;
+                average += t;
+            }
+            average/=numTrials;
+            System.out.println("\tKD Tree: " + average/1000000 + "." + average%1000000 + " milliseconds");
+            index[0] = 3;
+            testData.putScalar(index, average);
+            currentDataSet+=100;
+        }
+        writeToMatlabJson(testData, fileLocation+"TestDataForDifferentSampleSizes.json");
+    }
+
+    public static void testDimensionSize(double epsilon){
+        final int numTrials = 10;
+        final int numberDataSets = 20;
+        String fileLocation = "C:\\Users\\Jeremy\\Documents\\MATLAB\\Fast Algorithms\\Project\\DimensionTesting\\";
+        String fileName = "d";
+        String fileExtension = ".json";
+
+        INDArray array;
+        INDArray output;
+        int[] shape = {4,0};
+        INDArray testData = new NDArray(shape);
+
+        long t;
+        long average = 0;
+        int[] index = {0,0};
+        for(int i = 0; i < numberDataSets; i++){
+            System.out.println("Data Size: " + i);
+            index[0] = 0;
+            index[1] = i;
+            testData.putScalar(index, i);
+            array = get2DArray(fileLocation+i+fileName+fileExtension);
+            for(int j = 0;j < numTrials;j++){
+                t = System.nanoTime();
+                output = singleThreadedNearestNeighbor(array, epsilon);
+                t = System.nanoTime() - t;
+                average += t;
+            }
+            average/=numTrials;
+            System.out.println("\tSerial: " + average/1000000 + "." + average%1000000 + " milliseconds");
+            index[0] = 1; //Second row is the average serial time
+            testData.putScalar(index, average);
+            for(int j = 0;j < numTrials;j++){
+                t = System.nanoTime();
+                output = multiThreadedNearestNeighbor(array, epsilon);
+                t = System.nanoTime() - t;
+                average += t;
+            }
+            average/=numTrials;
+            System.out.println("\tMultiThreaded: " + average/1000000 + "." + average%1000000 + " milliseconds");
+            index[0] = 2;
+            testData.putScalar(index, average);
+            for(int j = 0;j < numTrials;j++){
+                t = System.nanoTime();
+                output = JLNearestNeighbors(20,array,epsilon);
+                t = System.nanoTime() - t;
+                average += t;
+            }
+            average/=numTrials;
+            System.out.println("\tKD Tree: " + average/1000000 + "." + average%1000000 + " milliseconds");
+            index[0] = 3;
+            testData.putScalar(index, average);
+        }
+        writeToMatlabJson(testData, fileLocation+"TestDataForDifferentDimensions.json");
+    }
 
 }
