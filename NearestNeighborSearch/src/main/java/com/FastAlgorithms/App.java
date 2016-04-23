@@ -31,7 +31,7 @@ public class App
             INDArray output_kd;
             double[] epsilons = {.1,.5,1,5,10,100,200,1000};
             String fileLocation = "C:\\Users\\Jeremy\\Documents\\MATLAB\\Fast Algorithms\\Project\\";
-            String fileName = "n_100";
+            String fileName = "3dCurveNoise";
             String fileExtension = ".json";
 
             array = get2DArray(fileLocation+fileName+fileExtension);
@@ -51,11 +51,12 @@ public class App
                 System.out.println("\tParallel took: " + t/1000000 + "." + t%1000000 + " milliseconds");
                 testEquality(output,output_multi, 0.0000000001);
                 t = System.nanoTime();
-                output_kd = JLNearestNeighbors(5, array, epsilons[i]);
+                output_kd = JLNearestNeighbors(20, array, epsilons[i]);
                 t = System.nanoTime() - t;
                 System.out.println("\tKD Tree took: " + t/1000000 + "." + t%1000000 + " milliseconds");
                 testEquality(output,output_kd, 0.001);
-                writeToMatlabJson(output_multi,"C:\\Users\\Jeremy\\Documents\\MATLAB\\Fast Algorithms\\Project\\"+fileName+"_epsilon_"+Double.toString(epsilons[i])+".json");
+                writeToMatlabJson(output,"C:\\Users\\Jeremy\\Documents\\MATLAB\\Fast Algorithms\\Project\\"+fileName+"_epsilon_"+Double.toString(epsilons[i])+".json");
+                writeToMatlabJson(output_kd,"C:\\Users\\Jeremy\\Documents\\MATLAB\\Fast Algorithms\\Project\\"+fileName+"_epsilon_"+Double.toString(epsilons[i])+"_kd.json");
             }
         }catch(Exception e){
             e.printStackTrace();
@@ -207,7 +208,7 @@ public class App
 
     public static INDArray JLNearestNeighbors(int numRuns, INDArray input, double epsilon){
         INDArray randomProjection = KDTree.randomProjection(input);
-        KDTree kdTree = new KDTree(randomProjection, 5);
+        KDTree kdTree = new KDTree(randomProjection, 10);
         kdTree.makeKDTree();
         for(int j = 1; j <= numRuns; j++){
             randomProjection = KDTree.randomProjection(input);
