@@ -34,6 +34,10 @@ public class App
             //String fileName = "n_100.json";
 
             array = get2DArray(fileLocation+fileName+fileExtension);
+            //System.out.println(array);
+
+            KDTree kd = new KDTree(array, 3);
+            kd.makeKDTree();
 
             for(int i = 0; i < epsilons.length; i++){
                 System.out.println(epsilons[i]);
