@@ -49,7 +49,7 @@ public class App
                 output_multi = multiThreadedNearestNeighbor(array, epsilons[i]);
                 t = System.nanoTime() - t;
                 System.out.println("\tParallel took: " + t/1000000 + "." + t%1000000 + " milliseconds");
-                testEquality(output,output_multi);
+                testEquality(output,output_multi, 0.00000000001);
                 writeToMatlabJson(output_multi,"C:\\Users\\Jeremy\\Documents\\MATLAB\\Fast Algorithms\\Project\\"+fileName+"_epsilon_"+Double.toString(epsilons[i])+".json");
             }
         }catch(Exception e){
@@ -162,8 +162,15 @@ public class App
         while(!exec.isTerminated()){};
         return output;
     }
+    public INDArray kdTreeNearestNeighbors(INDArray input, double epsilon){
+        int numPoints = input.shape()[0];
+        int[] outShape = {numPoints, numPoints};
+        INDArray output = Nd4j.create(outShape);
 
-    public static boolean testEquality(INDArray matrix1, INDArray matrix2){
+        return output;
+    }
+
+    public static boolean testEquality(INDArray matrix1, INDArray matrix2, double tolerance){
         int[] dim1 = matrix1.shape();
         int[] dim2 = matrix2.shape();
         for(int i = 0; i < dim1.length; i++){
@@ -180,15 +187,18 @@ public class App
             System.out.println("Higher dimensional equality tester not implemented");
             return false;
         }
+        boolean rv = true;
         for(int i = 0; i < dim1[0]; i++){
             for(int j = 0; j < dim1[1]; j++){
-                if(matrix1.getDouble(i,j) != matrix2.getDouble(i,j)){
+                if(matrix1.getDouble(i,j) - matrix2.getDouble(i,j) > tolerance){
                     System.out.println("Element at " + i + "," + j + " mismatch " + matrix1.getDouble(i,j) + " != " + matrix2.getDouble(i,j));
-                    return false;
+                    rv = false;
                 }
             }
         }
-        System.out.println("Matrices are equal");
-        return true;
+        return rv;
     }
+
+
+
 }
