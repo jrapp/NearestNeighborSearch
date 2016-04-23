@@ -34,7 +34,7 @@ public class App
 
             array = get2DArray(fileLocation+fileName+fileExtension);
 
-            stage1(4, array);
+            JLNearestNeighbors(4, array);
 
 
             for(int i = 0; i < epsilons.length; i++){
@@ -198,15 +198,16 @@ public class App
     }
 
 
-    public static void stage1(int numRuns, INDArray input){
+    public static void JLNearestNeighbors(int numRuns, INDArray input){
         INDArray randomProjection = KDTree.randomProjection(input);
         KDTree kdTree = new KDTree(randomProjection, 5);
+        kdTree.makeKDTree();
         for(int j = 1; j <= numRuns; j++){
             randomProjection = KDTree.randomProjection(input);
             kdTree.setNewInput(randomProjection);
             kdTree.makeKDTree();
         }
-        kdTree.list.print();
+        
     }
 
 

@@ -19,7 +19,7 @@ public class KDTree {
     private int k = 1;   //Size of the number of elements in the leaves at the end
     private int data_dim;
     private int[] permutation;
-    ListOfNearestNeighbors list;
+    public ListOfNearestNeighbors list;
     public KDTree(INDArray myinput, int myk){
         input = myinput;
         k = myk;
